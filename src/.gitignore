@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Bancos e fila da PoC (gerados em runtime)
+*.db
+event_queue/
+queue*/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

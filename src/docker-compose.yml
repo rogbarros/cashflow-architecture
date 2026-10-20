@@ -1,0 +1,51 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Management UI (guest/guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cashflow-service:
+    build:
+      context: .
+      args:
+        SERVICE: cashflow_service
+    environment:
+      TRANSPORT: rabbit
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/%2F
+      CASHFLOW_DB: /data/cashflow.db
+      PORT: "8001"
+    ports:
+      - "8001:8001"
+    volumes:
+      - cashflow_data:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  consolidation-service:
+    build:
+      context: .
+      args:
+        SERVICE: consolidation_service
+    environment:
+      TRANSPORT: rabbit
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/%2F
+      CONSOLIDATION_DB: /data/consolidation.db
+      PORT: "8002"
+    ports:
+      - "8002:8002"
+    volumes:
+      - consolidation_data:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  cashflow_data:
+  consolidation_data:
